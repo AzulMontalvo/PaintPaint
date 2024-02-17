@@ -1,3 +1,5 @@
+using System.Drawing.Imaging;
+
 namespace PaintPaint
 {
     public partial class Form1 : Form
@@ -20,8 +22,11 @@ namespace PaintPaint
         public Form1()
         {
             InitializeComponent();
-            picBoxPapel.Image = new Bitmap(picBoxPapel.Height, picBoxPapel.Width);
-            papel = picBoxPapel.CreateGraphics();
+            //picBoxPapel.Image = new Bitmap(picBoxPapel.Height, picBoxPapel.Width);
+            //papel = picBoxPapel.CreateGraphics();
+            Bitmap bmp = new Bitmap(picBoxPapel.Width, picBoxPapel.Height);
+            picBoxPapel.Image = bmp;
+            papel = Graphics.FromImage(picBoxPapel.Image);
             papel.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias; //Suavizar el movimiento del mouse
             tamanioPincel = trackTamañoPincel.Value; //Asignar el tamaño del pincel de acuerdo al TrackBar
             R = int.Parse(txtR.Text);
@@ -70,6 +75,8 @@ namespace PaintPaint
                 int alto = Math.Abs(e.Y - y);
                 papel.DrawEllipse(pen, x, y, ancho, alto);
                 moviendo = false;
+
+                picBoxPapel.Invalidate();
                 // dibCirculo = false;
             }
 
@@ -80,6 +87,7 @@ namespace PaintPaint
                 int alto = Math.Abs(e.Y - y);
                 papel.DrawRectangle(pen, x, y, ancho, alto);
                 moviendo = false;
+                picBoxPapel.Invalidate();
                 // dibCirculo = false;
             }
 
@@ -92,6 +100,7 @@ namespace PaintPaint
                     papel.DrawPolygon(pen, pTriangulo.ToArray());
                     pTriangulo.Clear();
                     moviendo = false;
+                    picBoxPapel.Invalidate();
 
                 }
             }
@@ -107,6 +116,9 @@ namespace PaintPaint
         {
             borrar = true;
             pintar = false;
+            dibCirculo = false;
+            dibCuadrado = false;
+            dibTriangulo = false;
         }
 
         private void picBoxPapel_MouseMove(object sender, MouseEventArgs e)
@@ -117,6 +129,8 @@ namespace PaintPaint
                 papel.DrawLine(pen, new Point(x, y), e.Location);
                 x = e.X;
                 y = e.Y;
+
+                picBoxPapel.Invalidate();
             }
 
             if (moviendo && borrar)
@@ -125,6 +139,8 @@ namespace PaintPaint
                 papel.DrawLine(pen, new Point(x, y), e.Location);
                 x = e.X;
                 y = e.Y;
+
+                picBoxPapel.Invalidate();
             }
 
         }
@@ -192,12 +208,68 @@ namespace PaintPaint
 
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    picBoxPapel.Image = new Bitmap(ofd.FileName);
-                    picBoxPapel.SizeMode = PictureBoxSizeMode.StretchImage;
+                    //picBoxPapel.Image = new Bitmap(ofd.FileName);
+                    //picBoxPapel.SizeMode = PictureBoxSizeMode.StretchImage;
+                    Image imagencargada = Image.FromFile(ofd.FileName);
+
+                    if (picBoxPapel.Image != null)
+                    {
+                        picBoxPapel.Image.Dispose();
+                        picBoxPapel.Image = null;
+                    }
+
+                    Bitmap bmp = new Bitmap(imagencargada.Width, imagencargada.Height);
+
+                    using (Graphics g = Graphics.FromImage(bmp))
+                    {
+                        g.DrawImage(imagencargada, 0, 0, bmp.Width, bmp.Height);
+                    }
+
+                    picBoxPapel.Image = bmp;
+
+                    if (papel != null)
+                    {
+                        papel.Dispose();
+                    }
+                    papel = Graphics.FromImage(picBoxPapel.Image);
+                    papel.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
                 }
 
             }
         }
 
+        private void GuardarImagen()
+        {
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Title = "Guardar";
+                sfd.Title = "Archivo PNG (*.png)|*.png|Archivo JPEG (*.jpeg;*jpg)|*.jpeg;*jpg|Archivo BMP (*.bmp)|*.bmp";
+
+                if (sfd.ShowDialog()== DialogResult.OK)
+                {
+                    ImageFormat format = ImageFormat.Png;
+                    switch (Path.GetExtension(sfd.FileName).ToLower())
+                    {
+                        case ".jpg":
+                        case "jpeg":
+                            format = ImageFormat.Jpeg;
+                            break;
+                        case ".bmp":
+                            format = ImageFormat.Bmp;
+                            break;
+                    }
+                    picBoxPapel.Image.Save(sfd.FileName, format);
+                }
+            }
+        }
+        private void btnGuardar_Click(object sender, EventArgs e)
+        {
+            GuardarImagen();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
