@@ -18,15 +18,15 @@ namespace PaintPaint
         bool dibCirculo = false;
         bool dibCuadrado = false;
         bool dibTriangulo = false;
-        List<Point> pTriangulo = new List<Point>();
+        List<Point> pTriangulo = new List<Point>(); //Lista de puntos para el triángulo
         public Form1()
         {
             InitializeComponent();
             //picBoxPapel.Image = new Bitmap(picBoxPapel.Height, picBoxPapel.Width);
             //papel = picBoxPapel.CreateGraphics();
-            Bitmap bmp = new Bitmap(picBoxPapel.Width, picBoxPapel.Height);
-            picBoxPapel.Image = bmp;
-            papel = Graphics.FromImage(picBoxPapel.Image);
+            Bitmap bmp = new Bitmap(picBoxPapel.Width, picBoxPapel.Height);//Crear bmp con las medidas del picBoxPapel
+            picBoxPapel.Image = bmp; //Asignar al bmp lo que haya en el picBoxPapel
+            papel = Graphics.FromImage(picBoxPapel.Image); //Crear un gráfico a partir de lo que hay en picBoxPapel
             papel.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias; //Suavizar el movimiento del mouse
             tamanioPincel = trackTamañoPincel.Value; //Asignar el tamaño del pincel de acuerdo al TrackBar
             R = int.Parse(txtR.Text);
@@ -71,12 +71,12 @@ namespace PaintPaint
             if (dibCirculo)
             {
                 cambiarPincel(int.Parse(txtR.Text), int.Parse(txtG.Text), int.Parse(txtB.Text));
-                int ancho = Math.Abs(e.X - x);
-                int alto = Math.Abs(e.Y - y);
+                int ancho = Math.Abs(e.X - x); //Asignar la posición del mouse como el ancho (o inicio) de la elipse
+                int alto = Math.Abs(e.Y - y); //Asignar la posición del mouse como el alto (o final) de la elipse
                 papel.DrawEllipse(pen, x, y, ancho, alto);
                 moviendo = false;
 
-                picBoxPapel.Invalidate();
+                picBoxPapel.Invalidate(); //Actualizar el papel para que se muestren los cambios
                 // dibCirculo = false;
             }
 
@@ -93,12 +93,12 @@ namespace PaintPaint
 
             if (dibTriangulo)
             {
-                pTriangulo.Add(new Point(e.X, e.Y));
-                if (pTriangulo.Count == 3)
+                pTriangulo.Add(new Point(e.X, e.Y)); //Comenzar a agregar los puntos a la lista
+                if (pTriangulo.Count == 3) //Validar que ya existan 3 puntos
                 {
                     cambiarPincel(int.Parse(txtR.Text), int.Parse(txtG.Text), int.Parse(txtB.Text));
-                    papel.DrawPolygon(pen, pTriangulo.ToArray());
-                    pTriangulo.Clear();
+                    papel.DrawPolygon(pen, pTriangulo.ToArray()); //Dibujar polígono en base a los puntos guardados
+                    pTriangulo.Clear(); //Borrar los puntos de la lista
                     moviendo = false;
                     picBoxPapel.Invalidate();
 
@@ -110,6 +110,9 @@ namespace PaintPaint
         {
             pintar = true;
             borrar = false;
+            dibCirculo = false;
+            dibCuadrado = false;
+            dibTriangulo = false;
         }
 
         private void btnBorrador_Click(object sender, EventArgs e)
@@ -169,7 +172,7 @@ namespace PaintPaint
 
         private void trackTamañoPincel_Scroll(object sender, EventArgs e)
         {
-            lblTamaPincel.Text = trackTamañoPincel.Value.ToString();
+            lblTamaPincel.Text = trackTamañoPincel.Value.ToString(); //Asignar el valor del trackBar al label
         }
 
         private void Circulo_Click(object sender, EventArgs e)
@@ -201,26 +204,26 @@ namespace PaintPaint
 
         private void btnCargarFondo_Click(object sender, EventArgs e)
         {
-            using (OpenFileDialog ofd = new OpenFileDialog())
+            using (OpenFileDialog ofd = new OpenFileDialog()) //Cuadro de diálogo para abrir el archivo
             {
-                ofd.Title = "Seleccionar fondo";
-                ofd.Filter = "Archivos de imagen (*.jpg;*.jpeg;*.png;*.bmp)|*.jpeg;*.jpeg;*.png;*.bmp";
+                ofd.Title = "Seleccionar fondo"; //Nombre del cuadro de diálogo
+                ofd.Filter = "Archivos de imagen (*.jpg;*.jpeg;*.png;*.bmp)|*.jpeg;*.jpeg;*.png;*.bmp"; //Archivos permitidos
 
-                if (ofd.ShowDialog() == DialogResult.OK)
+                if (ofd.ShowDialog() == DialogResult.OK) //Validar que se haya cerrado el cuadro de diálogo
                 {
                     //picBoxPapel.Image = new Bitmap(ofd.FileName);
                     //picBoxPapel.SizeMode = PictureBoxSizeMode.StretchImage;
-                    Image imagencargada = Image.FromFile(ofd.FileName);
+                    Image imagencargada = Image.FromFile(ofd.FileName); //Variable que almacena la imagen
 
-                    if (picBoxPapel.Image != null)
+                    if (picBoxPapel.Image != null) //Permite pintar sobre el nuevo objeto, libera la imagen anterior
                     {
                         picBoxPapel.Image.Dispose();
-                        picBoxPapel.Image = null;
+                        //picBoxPapel.Image = null;
                     }
 
-                    Bitmap bmp = new Bitmap(imagencargada.Width, imagencargada.Height);
+                    Bitmap bmp = new Bitmap(imagencargada.Width, imagencargada.Height);// Asigna la imagen como un nuevo bmp
 
-                    using (Graphics g = Graphics.FromImage(bmp))
+                    using (Graphics g = Graphics.FromImage(bmp)) //Asignar el gráfico al bmp
                     {
                         g.DrawImage(imagencargada, 0, 0, bmp.Width, bmp.Height);
                     }
